@@ -8,12 +8,13 @@ import (
 	"gostart/helpers"
 
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Setup(PORT string) {
+func Setup(PORT string, db *mongo.Database) {
 	r := mux.NewRouter()
 
-	v1(r)
+	v1(r, db)
 	v2(r)
 
 	log.Fatal(http.ListenAndServe(":"+PORT, helpers.Logger(r)))
@@ -30,11 +31,11 @@ func ping(s *mux.Router, version string) {
 	}).Methods("GET")
 }
 
-func v1(r *mux.Router) {
+func v1(r *mux.Router, db *mongo.Database) {
 	s := r.PathPrefix("/api/v1").Subrouter()
 	ping(s, "v1")
 
-	userRoutes(s.PathPrefix("/users").Subrouter())
+	userRoutes(s.PathPrefix("/users").Subrouter(), db)
 }
 
 func v2(r *mux.Router) {
