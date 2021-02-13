@@ -11,5 +11,5 @@ func userRoutes(r *mux.Router, db *mongo.Database) {
 	userController := controllers.NewUserController(db)
 
 	r.HandleFunc("/register", userController.Register).Methods("POST")
-	// r.HandleFunc("/login", userController.Login).Methods("POST")
+	r.HandleFunc("/login", userController.Login).Methods("POST")
 }

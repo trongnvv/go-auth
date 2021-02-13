@@ -1,12 +1,18 @@
 package controllers
 
 import (
-	"fmt"
+	"context"
+	"gostart/helpers"
+	"gostart/models"
 	"gostart/services"
+
 	"net/http"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+var ctx = context.TODO()
 
 type UserController struct {
 	*BaseController
@@ -18,6 +24,10 @@ type reqRegister struct {
 	Password string `json:"password"`
 }
 
+type resRegister struct {
+	Token string `json:"token"`
+}
+
 func NewUserController(db *mongo.Database) *UserController {
 	controller := NewBaseController(db)
 	service := services.NewUserService(db)
@@ -25,14 +35,92 @@ func NewUserController(db *mongo.Database) *UserController {
 }
 
 func (c UserController) Register(w http.ResponseWriter, r *http.Request) {
+	UserModel := c.db.Collection("users")
 	var req reqRegister
-	c.decodeRequestBody(w, r, &req)
 
-	// fmt.Println(req)
-	fmt.Printf("%+v\n", req)
-	c.service.Register()
+	if err := c.decodeRequestBody(w, r, &req); err != nil || req.Password == "" || req.Username == "" {
+		c.respond(w, BaseResponseBody{
+			Data:    nil,
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if err := UserModel.FindOne(ctx, bson.M{"username": req.Username}).Decode(&models.UserSchema{}); err == nil {
+		c.respond(w, BaseResponseBody{
+			Data:    nil,
+			Status:  http.StatusBadRequest,
+			Message: "Account existed",
+		})
+		return
+	}
+
+	newUser := models.UserSchema{
+		BaseSchema: c.defaultInsertDB(),
+		Username:   req.Username,
+		Password:   helpers.HashPassword(req.Password),
+	}
+
+	if _, err := UserModel.InsertOne(ctx, newUser); err != nil {
+		c.respond(w, BaseResponseBody{
+			Data:    nil,
+			Status:  http.StatusInternalServerError,
+			Message: "Insert database error!",
+		})
+		return
+	}
+
+	token, _ := helpers.CreateToken(req.Username, newUser.ID.String())
 	c.respond(w, BaseResponseBody{
-		Data:    req,
+		Data:    resRegister{Token: token},
+		Status:  http.StatusOK,
+		Message: "Request success!",
+	})
+}
+
+type reqLogin struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type resLogin struct {
+	Token string `json:"token"`
+}
+
+func (c UserController) Login(w http.ResponseWriter, r *http.Request) {
+	UserModel := c.db.Collection("users")
+	var req reqLogin
+
+	if err := c.decodeRequestBody(w, r, &req); err != nil || req.Password == "" || req.Username == "" {
+		c.respond(w, BaseResponseBody{
+			Data:    nil,
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+		})
+		return
+	}
+	user := &models.UserSchema{}
+	if err := UserModel.FindOne(ctx, bson.M{"username": req.Username}).Decode(user); err != nil {
+		c.respond(w, BaseResponseBody{
+			Data:    nil,
+			Status:  http.StatusBadRequest,
+			Message: "Account not existed",
+		})
+		return
+	}
+
+	if !helpers.ComparePassword(user.Password, req.Password) {
+		c.respond(w, BaseResponseBody{
+			Data:    nil,
+			Status:  http.StatusBadRequest,
+			Message: "Password wrong",
+		})
+		return
+	}
+	token, _ := helpers.CreateToken(req.Username, user.ID.String())
+	c.respond(w, BaseResponseBody{
+		Data:    resLogin{Token: token},
 		Status:  http.StatusOK,
 		Message: "Request success!",
 	})

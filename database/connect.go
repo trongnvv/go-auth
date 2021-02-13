@@ -31,10 +31,11 @@ func Setup(URI string, DB string) *mongo.Database {
 	fmt.Println("Mongodb connected!")
 	// defer client.Disconnect(ctx)
 
-	defer func() {
-		if err = client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
+	// defer func() {
+	// 	fmt.Println("disconnect db")
+	// 	if err = client.Disconnect(ctx); err != nil {
+	// 		panic(err)
+	// 	}
+	// }()
 	return client.Database("quickstart")
 }
