@@ -2,16 +2,14 @@ package services
 
 import (
 	"fmt"
-
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserService struct {
 	*BaseService
 }
 
-func NewUserService(db *mongo.Database) *UserService {
-	service := NewBaseService(db)
+func NewUserService() *UserService {
+	service := NewBaseService()
 	return &UserService{BaseService: service}
 }
 

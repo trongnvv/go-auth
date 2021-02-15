@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"gostart/database"
 	"gostart/helpers"
 	"gostart/models"
 	"gostart/services"
@@ -9,7 +10,6 @@ import (
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var ctx = context.TODO()
@@ -28,14 +28,14 @@ type resRegister struct {
 	Token string `json:"token"`
 }
 
-func NewUserController(db *mongo.Database) *UserController {
-	controller := NewBaseController(db)
-	service := services.NewUserService(db)
+func NewUserController() *UserController {
+	controller := NewBaseController()
+	service := services.NewUserService()
 	return &UserController{BaseController: controller, service: service}
 }
 
 func (c UserController) Register(w http.ResponseWriter, r *http.Request) {
-	UserModel := c.db.Collection("users")
+	UserModel := database.DB.Collection("users")
 	var req reqRegister
 
 	if err := c.decodeRequestBody(w, r, &req); err != nil || req.Password == "" || req.Username == "" {
@@ -89,8 +89,8 @@ type resLogin struct {
 }
 
 func (c UserController) Login(w http.ResponseWriter, r *http.Request) {
-	UserModel := c.db.Collection("users")
 	var req reqLogin
+	UserModel := database.DB.Collection("users")
 
 	if err := c.decodeRequestBody(w, r, &req); err != nil || req.Password == "" || req.Username == "" {
 		c.respond(w, BaseResponseBody{

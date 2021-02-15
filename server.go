@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"gostart/database"
 	"gostart/routes"
@@ -17,10 +18,14 @@ func main() {
 	}
 
 	PORT := os.Getenv("PORT")
-	URI_MONGODB := os.Getenv("URI_MONGODB")
+	MONGODB_URI := os.Getenv("MONGODB_URI")
+	MONGODB_NAME := os.Getenv("MONGODB_NAME")
 
 	fmt.Println("Start router ::" + PORT)
 
-	db := database.Setup(URI_MONGODB, "trongnv")
-	routes.Setup(PORT, db)
+	//Setup database
+	database.DB = database.Setup(MONGODB_URI, MONGODB_NAME)
+	defer database.DB.Client().Disconnect(context.TODO())
+
+	routes.Setup(PORT)
 }

@@ -11,7 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-func Setup(URI string, DB string) *mongo.Database {
+var DB *mongo.Database
+
+func Setup(URI string, NAME string) *mongo.Database {
 	client, err := mongo.NewClient(options.Client().ApplyURI(URI))
 	if err != nil {
 		log.Fatal(err)
@@ -29,13 +31,5 @@ func Setup(URI string, DB string) *mongo.Database {
 	}
 
 	fmt.Println("Mongodb connected!")
-	// defer client.Disconnect(ctx)
-
-	// defer func() {
-	// 	fmt.Println("disconnect db")
-	// 	if err = client.Disconnect(ctx); err != nil {
-	// 		panic(err)
-	// 	}
-	// }()
-	return client.Database("quickstart")
+	return client.Database(NAME)
 }

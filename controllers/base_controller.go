@@ -7,18 +7,16 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type BaseControllerInterface interface {
 }
 
 type BaseController struct {
-	db *mongo.Database
 }
 
-func NewBaseController(db *mongo.Database) *BaseController {
-	return &BaseController{db: db}
+func NewBaseController() *BaseController {
+	return &BaseController{}
 }
 
 type BaseResponseBody struct {
