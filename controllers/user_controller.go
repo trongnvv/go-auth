@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"context"
-	"gostart/database"
-	"gostart/helpers"
-	"gostart/models"
-	"gostart/services"
+	"goauth/database"
+	"goauth/helpers"
+	"goauth/models"
+	"goauth/services"
 
 	"net/http"
 

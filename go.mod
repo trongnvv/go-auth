@@ -1,4 +1,4 @@
-module gostart
+module goauth
 
 go 1.15
 

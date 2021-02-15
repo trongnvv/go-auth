@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"gostart/controllers"
+	"goauth/controllers"
 
 	"github.com/gorilla/mux"
 )

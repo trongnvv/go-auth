@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"gostart/helpers"
+	"goauth/helpers"
 
 	"github.com/gorilla/mux"
 )

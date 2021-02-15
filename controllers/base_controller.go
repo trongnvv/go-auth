@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"gostart/models"
+	"goauth/models"
 	"net/http"
 	"time"
 

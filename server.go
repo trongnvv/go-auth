@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"gostart/database"
-	"gostart/routes"
+	"goauth/database"
+	"goauth/routes"
 	"log"
 	"os"
 
