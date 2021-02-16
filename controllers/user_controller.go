@@ -39,20 +39,12 @@ func (c UserController) Register(w http.ResponseWriter, r *http.Request) {
 	var req reqRegister
 
 	if err := c.decodeRequestBody(w, r, &req); err != nil || req.Password == "" || req.Username == "" {
-		c.respond(w, BaseResponseBody{
-			Data:    nil,
-			Status:  http.StatusBadRequest,
-			Message: err.Error(),
-		})
+		c.respond(w, nil, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := UserModel.FindOne(ctx, bson.M{"username": req.Username}).Decode(&models.UserSchema{}); err == nil {
-		c.respond(w, BaseResponseBody{
-			Data:    nil,
-			Status:  http.StatusBadRequest,
-			Message: "Account existed",
-		})
+		c.respond(w, nil, http.StatusBadRequest, "Account existed")
 		return
 	}
 
@@ -63,20 +55,13 @@ func (c UserController) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := UserModel.InsertOne(ctx, newUser); err != nil {
-		c.respond(w, BaseResponseBody{
-			Data:    nil,
-			Status:  http.StatusInternalServerError,
-			Message: "Insert database error!",
-		})
+		c.respond(w, nil, http.StatusInternalServerError, "Insert database error!")
 		return
 	}
 
-	token, _ := helpers.CreateToken(req.Username, newUser.ID.String())
-	c.respond(w, BaseResponseBody{
-		Data:    resRegister{Token: token},
-		Status:  http.StatusOK,
-		Message: "Request success!",
-	})
+	token, _ := helpers.CreateToken(req.Username, newUser.ID.Hex())
+	c.respond(w, resRegister{Token: token}, http.StatusOK, "Request success!")
+
 }
 
 type reqLogin struct {
@@ -93,35 +78,35 @@ func (c UserController) Login(w http.ResponseWriter, r *http.Request) {
 	UserModel := database.DB.Collection("users")
 
 	if err := c.decodeRequestBody(w, r, &req); err != nil || req.Password == "" || req.Username == "" {
-		c.respond(w, BaseResponseBody{
-			Data:    nil,
-			Status:  http.StatusBadRequest,
-			Message: err.Error(),
-		})
+		c.respond(w, nil, http.StatusBadRequest, err.Error())
 		return
 	}
 	user := &models.UserSchema{}
 	if err := UserModel.FindOne(ctx, bson.M{"username": req.Username}).Decode(user); err != nil {
-		c.respond(w, BaseResponseBody{
-			Data:    nil,
-			Status:  http.StatusBadRequest,
-			Message: "Account not existed",
-		})
+		c.respond(w, nil, http.StatusBadRequest, "Account not existed")
 		return
 	}
 
 	if !helpers.ComparePassword(user.Password, req.Password) {
-		c.respond(w, BaseResponseBody{
-			Data:    nil,
-			Status:  http.StatusBadRequest,
-			Message: "Password wrong",
-		})
+		c.respond(w, nil, http.StatusBadRequest, "Password wrong!")
 		return
 	}
-	token, _ := helpers.CreateToken(req.Username, user.ID.String())
-	c.respond(w, BaseResponseBody{
-		Data:    resLogin{Token: token},
-		Status:  http.StatusOK,
-		Message: "Request success!",
-	})
+	token, _ := helpers.CreateToken(req.Username, user.ID.Hex())
+	c.respond(w, resLogin{Token: token}, http.StatusOK, "Request success!")
+}
+
+type resInfo struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+}
+
+func (c UserController) Info(w http.ResponseWriter, r *http.Request) {
+	c.respond(
+		w,
+		resInfo{
+			r.Header.Get("user_id"),
+			r.Header.Get("username"),
+		},
+		http.StatusOK, "Request success!",
+	)
 }

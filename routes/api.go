@@ -10,6 +10,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type Route struct {
+	path   string
+	method string
+	handle *mux.Route
+}
+
 func Setup(PORT string) {
 	r := mux.NewRouter()
 

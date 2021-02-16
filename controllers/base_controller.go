@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"goauth/helpers"
 	"goauth/models"
 	"net/http"
 	"time"
@@ -19,19 +20,17 @@ func NewBaseController() *BaseController {
 	return &BaseController{}
 }
 
-type BaseResponseBody struct {
-	Data    interface{} `json:"data"`
-	Status  int         `json:"status"`
-	Message string      `json:"message"`
-}
-
 func (c BaseController) decodeRequestBody(w http.ResponseWriter, r *http.Request, req interface{}) error {
 	return json.NewDecoder(r.Body).Decode(req)
 }
 
-func (c BaseController) respond(w http.ResponseWriter, data BaseResponseBody) {
-	w.WriteHeader(data.Status)
-	json.NewEncoder(w).Encode(data)
+func (c BaseController) respond(
+	w http.ResponseWriter,
+	data interface{},
+	status int,
+	message string,
+) {
+	helpers.Respond(w, helpers.BaseResponseBody{Data: data, Status: status, Message: message})
 }
 
 func (c BaseController) defaultInsertDB() *models.BaseSchema {
