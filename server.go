@@ -24,8 +24,8 @@ func main() {
 	fmt.Println("Start router ::" + PORT)
 
 	//Setup database
-	database.DB = database.Setup(MONGODB_URI, MONGODB_NAME)
-	defer database.DB.Client().Disconnect(context.TODO())
+	db := database.Setup(MONGODB_URI, MONGODB_NAME)
+	defer db.Client().Disconnect(context.TODO())
 
 	routes.Setup(PORT)
 }

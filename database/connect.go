@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"goauth/models"
 	"log"
 	"time"
 
@@ -31,5 +32,11 @@ func Setup(URI string, NAME string) *mongo.Database {
 	}
 
 	fmt.Println("Mongodb connected!")
-	return client.Database(NAME)
+	db := client.Database(NAME)
+	initModel(db)
+	return db
+}
+
+func initModel(db *mongo.Database) {
+	models.UserModel = db.Collection("users")
 }

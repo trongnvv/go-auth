@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"goauth/database"
 	"goauth/helpers"
 	"goauth/models"
 	"goauth/services"
@@ -35,7 +34,6 @@ func NewUserController() *UserController {
 }
 
 func (c UserController) Register(w http.ResponseWriter, r *http.Request) {
-	UserModel := database.DB.Collection("users")
 	var req reqRegister
 
 	if err := c.decodeRequestBody(w, r, &req); err != nil || req.Password == "" || req.Username == "" {
@@ -43,7 +41,7 @@ func (c UserController) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := UserModel.FindOne(ctx, bson.M{"username": req.Username}).Decode(&models.UserSchema{}); err == nil {
+	if err := models.UserModel.FindOne(ctx, bson.M{"username": req.Username}).Decode(&models.UserSchema{}); err == nil {
 		c.respond(w, nil, http.StatusBadRequest, "Account existed")
 		return
 	}
@@ -54,7 +52,7 @@ func (c UserController) Register(w http.ResponseWriter, r *http.Request) {
 		Password:   helpers.HashPassword(req.Password),
 	}
 
-	if _, err := UserModel.InsertOne(ctx, newUser); err != nil {
+	if _, err := models.UserModel.InsertOne(ctx, newUser); err != nil {
 		c.respond(w, nil, http.StatusInternalServerError, "Insert database error!")
 		return
 	}
@@ -75,14 +73,13 @@ type resLogin struct {
 
 func (c UserController) Login(w http.ResponseWriter, r *http.Request) {
 	var req reqLogin
-	UserModel := database.DB.Collection("users")
 
 	if err := c.decodeRequestBody(w, r, &req); err != nil || req.Password == "" || req.Username == "" {
 		c.respond(w, nil, http.StatusBadRequest, err.Error())
 		return
 	}
 	user := &models.UserSchema{}
-	if err := UserModel.FindOne(ctx, bson.M{"username": req.Username}).Decode(user); err != nil {
+	if err := models.UserModel.FindOne(ctx, bson.M{"username": req.Username}).Decode(user); err != nil {
 		c.respond(w, nil, http.StatusBadRequest, "Account not existed")
 		return
 	}
