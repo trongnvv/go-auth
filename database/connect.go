@@ -12,8 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-var DB *mongo.Database
-
 func Setup(URI string, NAME string) *mongo.Database {
 	client, err := mongo.NewClient(options.Client().ApplyURI(URI))
 	if err != nil {
